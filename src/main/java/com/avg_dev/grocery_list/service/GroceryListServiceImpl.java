@@ -23,24 +23,31 @@ public class GroceryListServiceImpl implements GroceryListService {
     @Override
     public Boolean addToList(EntryDto entry) {
 
-        AtomicReference<GroceryList> groceryList = new AtomicReference<>(mongoTemplate.findById(entry.getListId(), GroceryList.class));
+
+        AtomicReference<GroceryList> groceryListAtomic = new AtomicReference<>();
+        if (entry.getListId() != null) {
+            groceryListAtomic.set(mongoTemplate.findById(entry.getListId(), GroceryList.class));
+        }
         Entry e = mapper.convertValue(entry, Entry.class);
-        Optional.ofNullable(groceryList.get()).ifPresentOrElse(
-                list -> Optional.ofNullable(groceryList.get().getEntries()).ifPresentOrElse(entries -> entries.add(e), () -> {
-                    groceryList.get().setEntries(new ArrayList<>());
-                    groceryList.get().getEntries().add(e);
+        Optional.ofNullable(groceryListAtomic.get()).ifPresentOrElse(
+                list -> Optional.ofNullable(list.getEntries()).ifPresentOrElse(entries -> entries.add(e), () -> {
+                    groceryListAtomic.get().setEntries(new ArrayList<>());
+                    groceryListAtomic.get().getEntries().add(e);
                 }),
                 () -> {
                     String generatedName = RandomStringUtils.randomAlphabetic(10);
-                    groceryList.set(GroceryList.builder()
+                    groceryListAtomic.set(GroceryList.builder()
                             .entries(new ArrayList<>())
                             .name(generatedName)
                             .build());
-                    groceryList.get().setEntries(new ArrayList<>());
-                    groceryList.get().getEntries().add(e);
+                    groceryListAtomic.get().setEntries(new ArrayList<>());
+                    GroceryList newList = mongoTemplate.save(groceryListAtomic.get());
+                    e.setListId(newList.get_id());
+                    newList.getEntries().add(e);
+                    groceryListAtomic.set(newList);
                 }
         );
-        mongoTemplate.save(groceryList.get());
+        mongoTemplate.save(groceryListAtomic.get());
         return true;
     }
 }

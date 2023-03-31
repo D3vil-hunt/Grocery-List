@@ -10,7 +10,6 @@ import org.springframework.validation.annotation.Validated;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EntryDto {
 
-    @NotNull
     private String listId;
     @NotNull
     private String name;
