@@ -5,8 +5,6 @@ import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Objects;
-
 public class ResponseUtils {
 
     @Builder
@@ -28,26 +26,14 @@ public class ResponseUtils {
     }
 
     public static <T> ResponseEntity getResponse(HttpStatus status, String msg, T body) {
-        if (Objects.nonNull(body)) {
-            return ResponseEntity
-                    .status(status)
-                    .body(GenericResponse.builder()
-                            .status(status)
-                            .message(msg)
-                            .data(body)
-                            .build()
-                    );
-        } else {
-            return ResponseEntity
-                    .status(status)
-                    .body(GenericResponse.builder()
-                            .status(status)
-                            .message(msg)
-                            .build()
-                    );
-        }
-
+        return ResponseEntity
+                .status(status)
+                .body(GenericResponse.builder()
+                        .status(status)
+                        .message(msg)
+                        .data(body)
+                        .build()
+                );
     }
-
 
 }
